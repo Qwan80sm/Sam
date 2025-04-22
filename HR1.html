@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MySlam</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      background-color: #111;
+      color: white;
+    }
+    header {
+      background: rgba(0, 0, 0, 0.8);
+      height: 60px;
+      padding: 0 15px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.3s ease;
+    }
+    header.hide {
+      transform: translateY(-100%);
+    }
+    .navbar {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .navbar .logo {
+      width: 80px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+    .navbar input {
+      flex-grow: 1;
+      max-width: 100%;
+      margin: 0 10px;
+      padding: 6px 10px;
+      border-radius: 20px;
+      border: 1px solid #a259ff;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 14px;
+    }
+    .navbar .menu {
+      display: flex;
+      gap: 10px;
+    }
+    .navbar .menu button {
+      background-color: #ff2f6c;
+      border: none;
+      padding: 6px 14px;
+      color: white;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+    .navbar .menu button:hover {
+      background-color: #ff4c80;
+    }
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      width: 28px;
+      height: 22px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      margin-right: 10px;
+    }
+    .menu-toggle div {
+      background-color: white;
+      height: 3px;
+      width: 100%;
+      border-radius: 2px;
+      margin: 3px 0;
+    }
+    .sidebar {
+      width: 250px;
+      background: rgba(0, 0, 0, 0.9);
+      position: fixed;
+      top: 0;
+      left: -250px;
+      height: 100%;
+      padding: 20px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: left 0.3s ease-in-out;
+      z-index: 2000;
+    }
+    .sidebar.open {
+      left: 0;
+    }
+    .sidebar a,
+    .sidebar button {
+      color: white;
+      background: none;
+      border: none;
+      font-size: 18px;
+      text-align: right;
+      padding: 10px 0;
+      cursor: pointer;
+    }
+    .sidebar a:hover,
+    .sidebar button:hover {
+      background-color: #ff2f6c;
+      padding-right: 10px;
+    }
+    .content {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      transition: opacity 0.3s ease;
+    }
+    .video-card {
+      background: #1a1a1a;
+      border-radius: 10px;
+      border: 1px solid #a259ff;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    .video-card:hover {
+      transform: translateY(-5px);
+    }
+    .video-card img {
+      width: 100%;
+      height: auto;
+    }
+    .video-card .info {
+      padding: 10px;
+    }
+    .video-card .info h3 {
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    .video-card .info p {
+      font-size: 13px;
+      color: #ccc;
+    }
+    .video-player {
+      display: none;
+      position: relative;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+      margin: 20px;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 20px;
+    }
+    .video-details {
+      padding: 15px;
+    }
+    .video-details h1 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .actions button {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .actions button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    @media (max-width: 768px) {
+      .navbar .menu {
+        display: none;
+      }
+      .menu-toggle {
+        display: flex;
+      }
+      .navbar input {
+        font-size: 13px;
+      }
+      .video-card .info h3 {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header id="header">
+    <div class="navbar">
+      <button class="menu-toggle" id="menu-toggle">
+        <div></div><div></div><div></div>
+      </button>
+      <img src="https://www.logo.wine/a/logo/YouTube/YouTube-White-Full-Color-Logo.wine.svg" class="logo" alt="MyTube" onclick="toggleSidebar()" />
+      <input type="text" placeholder="ابحث عن الفيديو..." />
+      <div class="menu">
+        <button>تسجيل الدخول</button>
+        <button>الاشتراك</button>
+      </div>
+    </div>
+  </header>
+  
+  <div class="sidebar" id="sidebar">
+    <a href="#">الرئيسية</a>
+    <a href="#"></a>
+    <a href="#"></a>
+    <a href="#"></a>
+  </div>
+  
+  <div class="video-player" id="video-player">
+    <button id="back-button" style="margin-top: 20px; background-color: #ff2f6c; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer;">🔙</button>
+    <video id="video" controls></video>
+    <div class="video-details">
+      <h1 id="video-title">عنوان الفيديو</h1>
+      <p id="video-description">وصف الفيديو</p>
+      <div class="actions">
+        <button>إعجاب</button>
+        <button>إضافة إلى المفضلة</button>
+        <button>مشاركة</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="content">
+    <div class="video-card" onclick="location.href='?id=v1'">
+      <img src="https://i.ibb.co/F4Bx5GzP/1000066817.jpg" alt="فيديو 1" />
+      <div class="info">
+        <h3>عنوان الفيديو 1</h3>
+        <p>وصف الفيديو 1</p>
+      </div>
+    </div>
+    <div class="video-card" onclick="location.href='?id=v2'">
+      <img src="https://i.ibb.co/5h3Jx0zm/1000066821.png" alt="فيديو 2" />
+      <div class="info">
+        <h3>عنوان الفيديو 2</h3>
+        <p>وصف الفيديو 2</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const header = document.getElementById('header');
+    const videoPlayer = document.getElementById('video-player');
+    const videoElement = document.getElementById('video');
+    const videoTitle = document.getElementById('video-title');
+    const videoDescription = document.getElementById('video-description');
+    
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+    
+    function toggleSidebar() {
+      sidebar.classList.toggle('open');
+    }
+    
+    let lastScrollTop = 0;
+    window.addEventListener("scroll", function () {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollTop > lastScrollTop) {
+        header.classList.add("hide");
+      } else {
+        header.classList.remove("hide");
+      }
+      lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    });
+    
+    const videoSources = {
+      "v1": {
+        src: "https://d.top4top.io/m_3385jid3r1.mp4",
+        title: "عنوان الفيديو 1",
+        description: "وصف الفيديو 1"
+      },
+      "v2": {
+        src: "https://h.top4top.io/m_33866bmds1.mp4",
+        title: "عنوان الفيديو 2",
+        description: "وصف الفيديو 2"
+      }
+    };
+    
+    const params = new URLSearchParams(window.location.search);
+    const videoId = params.get('id');
+    if (videoId && videoSources[videoId]) {
+      const videoData = videoSources[videoId];
+      videoElement.src = videoData.src;
+      videoTitle.textContent = videoData.title;
+      videoDescription.textContent = videoData.description;
+      videoPlayer.style.display = 'block';
+      document.querySelector('.content').style.display = 'none';
+      videoElement.play();
+      window.scrollTo({
+        top: videoPlayer.offsetTop - 60,
+        behavior: 'smooth'
+      });
+    }
+    
+    const backButton = document.getElementById('back-button');
+    backButton.addEventListener('click', () => {
+      videoPlayer.style.display = 'none';
+      document.querySelector('.content').style.display = 'grid';
+      videoElement.pause();
+      history.pushState({}, document.title, window.location.pathname);
+    });
+  </script>
+</body>
+</html>

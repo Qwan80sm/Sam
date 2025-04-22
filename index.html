@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تسجيل / دخول</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <video autoplay muted loop class="bg-video">
+    <source src="https://video.twimg.com/amplify_video/1914395549735800832/vid/avc1/480x854/eAEeknzMWP0cSywn.mp4?tag=14" type="video/mp4" />
+  </video>
+
+  <div class="glass-form">
+    <div class="logo">MySlam</div>
+    <h2 id="formTitle">تسجيل الدخول</h2>
+    <input type="text" id="username" placeholder="اسم المستخدم" />
+    <input type="password" id="password" placeholder="كلمة المرور" />
+    <button onclick="handleAction()">تسجيل الدخول</button>
+    <div class="switch">
+      <span id="toggleText">ليس لديك حساب؟</span>
+      <a onclick="toggleMode()">أنشئ حساب الآن</a>
+    </div>
+    <div class="message" id="message"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
