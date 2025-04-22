@@ -1,49 +1,36 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const app = express();
-const PORT = 3000;
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>تسجيل حساب</title>
+</head>
+<body>
+  <h2>تسجيل حساب جديد</h2>
+  <form id="register-form">
+    <input type="text" id="username" placeholder="اسم المستخدم" required><br>
+    <input type="email" id="email" placeholder="البريد الإلكتروني" required><br>
+    <input type="password" id="password" placeholder="كلمة المرور" required><br>
+    <button type="submit">تسجيل</button>
+  </form>
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+  <p id="result"></p>
 
-const usersFile = path.join(__dirname, 'users.json');
+  <script>
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
-function getUsers() {
-  if (!fs.existsSync(usersFile)) return [];
-  const data = fs.readFileSync(usersFile, 'utf8');
-  return data ? JSON.parse(data) : [];
-}
+      const response = await fetch('http://localhost:3000/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
+      });
 
-function saveUsers(users) {
-  fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
-}
-
-app.post('/register', (req, res) => {
-  const { username, password } = req.body;
-  const users = getUsers();
-
-  if (users.find(user => user.username === username)) {
-    return res.json({ success: false, message: 'اسم المستخدم موجود مسبقًا' });
-  }
-
-  users.push({ username, password });
-  saveUsers(users);
-  res.json({ success: true, message: 'تم إنشاء الحساب بنجاح' });
-});
-
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  const users = getUsers();
-
-  const user = users.find(user => user.username === username && user.password === password);
-  if (user) {
-    res.json({ success: true, message: 'تم تسجيل الدخول بنجاح' });
-  } else {
-    res.json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`السيرفر يعمل على http://localhost:${PORT}`);
-});
+      const result = await response.json();
+      document.getElementById('result').textContent = result.message || result.error;
+    });
+  </script>
+</body>
+</html>
